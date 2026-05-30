@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 Yoga Queens Challenge</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:ital,wght@0,400;0,700;0,900;1,400&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --yellow: #FFD93D; --pink: #FF6B9D; --blue: #4CC9F0;
+    --dark: #1C1C2E; --card-bg: #FAFAFA;
+  }
+  body {
+    background: var(--dark);
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(255,217,61,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(76,201,240,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 30%, rgba(255,107,157,0.1) 0%, transparent 40%);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; min-height: 100vh;
+    padding: 40px 24px; width: 100%; max-width: 420px;
+  }
+  .login-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 14vw, 80px);
+    letter-spacing: 6px; line-height: 0.9; text-align: center;
+    background: linear-gradient(135deg, var(--yellow) 0%, var(--pink) 50%, var(--blue) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    filter: drop-shadow(0 4px 24px rgba(255,107,157,0.3)); margin-bottom: 6px;
+  }
+  .login-tagline {
+    font-family: 'Dancing Script', cursive; font-size: 20px;
+    color: rgba(255,255,255,0.7); letter-spacing: 1px; text-align: center; margin-bottom: 48px;
+  }
+  .login-prompt {
+    font-size: 11px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase;
+    color: rgba(255,255,255,0.45); margin-bottom: 20px; text-align: center;
+  }
+  .name-buttons { display: flex; flex-direction: column; gap: 14px; width: 100%; }
+  .name-btn {
+    width: 100%; padding: 18px 24px; border: none; border-radius: 16px; cursor: pointer;
+    font-family: 'Dancing Script', cursive; font-size: 28px; font-weight: 700;
+    color: var(--dark); letter-spacing: 1px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .name-btn:active { transform: scale(0.97); }
+  .name-btn.btn-multi  { background: linear-gradient(135deg, var(--yellow), var(--pink), var(--blue)); }
+  .name-btn.btn-pink   { background: var(--pink); }
+  .name-btn.btn-blue   { background: var(--blue); }
+  .name-btn.btn-yellow { background: var(--yellow); }
+  .name-btn.btn-blue2  { background: linear-gradient(135deg, var(--blue), #7B4FE0); color: white; }
+
+  /* ── POSE SETUP SCREEN ── */
+  #setup-screen {
+    display: none; flex-direction: column; align-items: center;
+    width: 100%; max-width: 480px; padding: 36px 20px 60px;
+  }
+  #setup-screen.visible { display: flex; }
+  .setup-header { text-align: center; margin-bottom: 28px; }
+  .setup-person-name {
+    font-family: 'Dancing Script', cursive; font-size: 32px; font-weight: 700; margin-bottom: 2px;
+  }
+  .setup-person-name.color-multi  { background: linear-gradient(135deg, var(--yellow), var(--pink), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .setup-person-name.color-pink   { color: var(--pink); }
+  .setup-person-name.color-blue   { color: var(--blue); }
+  .setup-person-name.color-yellow { color: var(--yellow); }
+  .setup-person-name.color-purple { color: #a78bfa; }
+  .setup-header h2 {
+    font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 4px;
+    color: white; margin-bottom: 6px;
+  }
+  .setup-header p { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+  .pose-entry-list { width: 100%; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .pose-entry-row {
+    background: rgba(255,255,255,0.06); border-radius: 12px;
+    padding: 10px 12px; display: flex; align-items: center; gap: 10px;
+  }
+  .pose-num {
+    font-size: 10px; font-weight: 900; color: rgba(255,255,255,0.25);
+    letter-spacing: 1px; min-width: 18px; text-align: center;
+  }
+  .pose-inputs { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+  .pose-input {
+    background: white; border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px; padding: 7px 10px; color: #1C1C2E;
+    font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+    outline: none; width: 100%; transition: border-color 0.2s;
+  }
+  .pose-input:focus { border-color: var(--pink); }
+  .pose-input::placeholder { color: #aaa; font-weight: 400; }
+  .pose-input.sanskrit { font-style: italic; font-size: 11px; color: #555; }
+  .setup-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+  .build-btn {
+    background: linear-gradient(135deg, var(--yellow), var(--pink));
+    border: none; border-radius: 16px; padding: 16px 24px;
+    font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 900;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--dark);
+    cursor: pointer; box-shadow: 0 4px 20px rgba(255,107,157,0.35);
+    transition: transform 0.15s;
+  }
+  .build-btn:active { transform: scale(0.97); }
+  .back-link {
+    background: none; border: none; color: rgba(255,255,255,0.35);
+    font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 1px; cursor: pointer; text-align: center; padding: 4px;
+  }
+  .setup-note { font-size: 10px; color: rgba(255,255,255,0.25); text-align: center; margin-top: 10px; line-height: 1.6; }
+
+  /* ── MAIN APP ── */
+  #main-app { display: none; flex-direction: column; align-items: center; width: 100%; padding: 32px 20px 60px; }
+  #main-app.visible { display: flex; }
+  .page-header { text-align: center; margin-bottom: 36px; }
+  .page-header .year-tag {
+    font-weight: 900; font-size: 11px; letter-spacing: 8px; text-transform: uppercase;
+    color: var(--yellow); margin-bottom: 4px;
+  }
+  .page-header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 10vw, 72px); letter-spacing: 6px; line-height: 0.9;
+    background: linear-gradient(135deg, var(--yellow) 0%, var(--pink) 50%, var(--blue) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .page-header .tagline {
+    font-family: 'Dancing Script', cursive;
+    font-size: clamp(16px, 3vw, 22px); color: rgba(255,255,255,0.7); margin-top: 6px;
+  }
+  .header-btns { display: flex; gap: 8px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+  .switch-btn, .edit-btn {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px; padding: 6px 18px; color: rgba(255,255,255,0.5);
+    font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 1px; cursor: pointer; transition: background 0.2s;
+  }
+  .switch-btn:active, .edit-btn:active { background: rgba(255,255,255,0.14); }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card-bg); border-radius: 20px; overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4); width: 100%; max-width: 480px;
+  }
+  .card-header {
+    padding: 16px 20px 22px; display: flex; flex-direction: column;
+    align-items: center; position: relative; overflow: hidden;
+  }
+  .card.accent-yellow .card-header { background: var(--yellow); }
+  .card.accent-pink   .card-header { background: var(--pink); }
+  .card.accent-blue   .card-header { background: var(--blue); }
+  .card.accent-multi  .card-header { background: linear-gradient(135deg, var(--yellow) 0%, var(--pink) 55%, var(--blue) 100%); }
+  .card.accent-purple .card-header { background: linear-gradient(135deg, var(--blue), #7B4FE0); }
+  .card-header::after {
+    content: ''; position: absolute; bottom: -14px; left: 0; right: 0;
+    height: 28px; background: inherit; clip-path: ellipse(55% 100% at 50% 0%); z-index: 0;
+  }
+  .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 4px; color: var(--dark); z-index: 1; position: relative; }
+  .card-subtitle { font-size: 9px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: rgba(28,28,46,0.6); z-index: 1; position: relative; }
+  .card-name { font-family: 'Dancing Script', cursive; font-size: 28px; font-weight: 700; color: var(--dark); z-index: 1; position: relative; margin-top: 2px; line-height: 1; }
+
+  /* ── POSE GRID ── */
+  .pose-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 18px 14px 16px; background: #F0F0F5; }
+  .pose-square {
+    background: white; border-radius: 12px; aspect-ratio: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07); transition: transform 0.15s;
+  }
+  .pose-square:nth-child(3n+1) { border-top: 3px solid var(--yellow); }
+  .pose-square:nth-child(3n+2) { border-top: 3px solid var(--pink); }
+  .pose-square:nth-child(3n)   { border-top: 3px solid var(--blue); }
+  .pose-bg { position: absolute; inset: 0; opacity: 0.06; pointer-events: none; }
+  .pose-square:nth-child(3n+1) .pose-bg { background: var(--yellow); }
+  .pose-square:nth-child(3n+2) .pose-bg { background: var(--pink); }
+  .pose-square:nth-child(3n)   .pose-bg { background: var(--blue); }
+  .pose-square.uploadable { cursor: pointer; }
+  .pose-square.uploadable:active { transform: scale(0.96); }
+  .upload-placeholder {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 100%; height: 100%; gap: 4px; position: relative; z-index: 1; padding: 8px 6px 4px;
+  }
+  .upload-icon { font-size: 26px; line-height: 1; opacity: 0.45; transition: opacity 0.15s, transform 0.15s; }
+  .pose-square.uploadable:active .upload-icon { opacity: 0.7; transform: scale(1.1); }
+  .tap-hint { font-size: 6.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #bbb; }
+  .pose-name-en { font-size: 8px; font-weight: 900; text-align: center; color: var(--dark); letter-spacing: 0.3px; line-height: 1.2; padding: 0 4px; }
+  .pose-name-sk  { font-size: 6.5px; font-style: italic; text-align: center; color: #aaa; padding: 0 4px 3px; line-height: 1.2; }
+  .pose-square.has-photo .upload-placeholder { display: none; }
+  .photo-fill { display: none; position: absolute; inset: 0; z-index: 2; flex-direction: column; }
+  .pose-square.has-photo .photo-fill { display: flex; }
+  .photo-fill img { width: 100%; flex: 1; object-fit: cover; min-height: 0; display: block; }
+  .photo-footer {
+    background: rgba(28,28,46,0.82); padding: 3px 5px 4px;
+    display: flex; flex-direction: column; align-items: center; gap: 1px; flex-shrink: 0;
+  }
+  .photo-footer .pf-en { font-size: 7.5px; font-weight: 900; color: white; text-align: center; line-height: 1.2; }
+  .photo-footer .pf-sk { font-size: 6px; font-style: italic; color: rgba(255,255,255,0.55); text-align: center; line-height: 1.2; }
+  .remove-btn {
+    position: absolute; top: 4px; right: 4px; z-index: 3;
+    background: rgba(255,255,255,0.9); border: none; border-radius: 50%;
+    width: 18px; height: 18px; font-size: 9px; cursor: pointer;
+    display: none; align-items: center; justify-content: center;
+    color: #666; font-weight: 900; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .pose-square.has-photo:active .remove-btn { display: flex; }
+  .pose-square.empty-slot { border-top: 3px solid #DDD; background: #f8f8f8; cursor: default; }
+
+  /* ── CARD FOOTER ── */
+  .card-footer { background: var(--card-bg); padding: 10px 14px 14px; display: flex; justify-content: center; }
+  .save-btn {
+    background: linear-gradient(135deg, var(--yellow), var(--pink));
+    border: none; border-radius: 20px; padding: 6px 16px;
+    font-family: 'Nunito', sans-serif; font-size: 10px; font-weight: 900;
+    letter-spacing: 1.5px; text-transform: uppercase; color: var(--dark);
+    cursor: pointer; box-shadow: 0 2px 10px rgba(255,107,157,0.35); transition: transform 0.15s;
+  }
+  .save-btn:active { transform: scale(0.96); }
+  #file-input { display: none; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--dark); color: white; padding: 10px 22px; border-radius: 30px;
+    font-size: 13px; font-weight: 700; opacity: 0; transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none; z-index: 999; white-space: nowrap;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── LIGHTBOX ── */
+  .lightbox {
+    display: none; position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.92); flex-direction: column;
+    align-items: center; justify-content: center; padding: 20px; gap: 16px;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 100%; max-height: 65vh; border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.6); }
+  .lightbox-instructions { color: white; text-align: center; font-size: 15px; font-weight: 700; line-height: 1.5; }
+  .lightbox-instructions span { display: block; font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.6); margin-top: 4px; }
+  .lightbox-close {
+    background: white; border: none; border-radius: 24px; padding: 10px 32px;
+    font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 900;
+    letter-spacing: 1px; cursor: pointer; color: var(--dark);
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-title">Yoga<br>Queens</div>
+  <div class="login-tagline">Strong. Determined. Disciplined.</div>
+  <div class="login-prompt">Who are you?</div>
+  <div class="name-buttons">
+    <button class="name-btn btn-multi"  onclick="login('Andrea')">Andrea</button>
+    <button class="name-btn btn-pink"   onclick="login('Gemma')">Gemma</button>
+    <button class="name-btn btn-blue"   onclick="login('Margaret')">Margaret</button>
+    <button class="name-btn btn-yellow" onclick="login('Emily')">Emily</button>
+    <button class="name-btn btn-blue2"  onclick="login('Kay')">Kay</button>
+  </div>
+</div>
+
+<!-- POSE SETUP -->
+<div id="setup-screen">
+  <div class="setup-header">
+    <div id="setup-person-name" class="setup-person-name"></div>
+    <h2>Your 12 Poses</h2>
+    <p>Enter each pose for your personal challenge card.<br>Sanskrit is optional but encouraged 🙏</p>
+  </div>
+  <div class="pose-entry-list" id="pose-entry-list"></div>
+  <div class="setup-actions">
+    <button class="build-btn" onclick="savePosesAndBuild()">Build My Card →</button>
+    <button class="back-link" onclick="backToLogin()">← Back to name selection</button>
+  </div>
+  <p class="setup-note">Your poses are saved to this device. Tap ✏ Edit Poses from your card anytime to make changes.</p>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-app">
+  <header class="page-header">
+    <div class="year-tag">✦ 2026 ✦</div>
+    <h1>Yoga Queens</h1>
+    <p class="tagline">Strong. Determined. Disciplined.</p>
+    <div class="header-btns">
+      <button class="switch-btn" onclick="backToLogin()">← Switch Player</button>
+      <button class="edit-btn"   onclick="goToSetup()">✏ Edit Poses</button>
+    </div>
+  </header>
+  <div id="card-container"></div>
+</div>
+
+<input type="file" id="file-input" accept="image/*">
+<div class="toast" id="toast"></div>
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-instructions">
+    📸 Long-press the image below, then tap <strong>Save to Photos</strong>
+    <span>Tap Done when finished</span>
+  </div>
+  <img id="lightbox-img" src="" alt="Your yoga card" />
+  <button class="lightbox-close" onclick="document.getElementById('lightbox').classList.remove('open')">Done</button>
+</div>
+
+<script>
+const defaultPoses = {
+  Andrea: [
+    { en: "Plow Pose",               sk: "Halasana" },
+    { en: "Pistol Squat",            sk: "Eka Pada Utkatasana" },
+    { en: "Supported Headstand",     sk: "Salamba Sirsasana" },
+    { en: "Forearm Stand",           sk: "Pincha Mayurasana" },
+    { en: "Funky Forearm Stand",     sk: "Parivrtta Pincha Mayurasana" },
+    { en: "Bound Side Angle",        sk: "Baddha Utthita Parsvakonasana" },
+    { en: "Cow Face Pose",           sk: "Gomukhasana" },
+    { en: "Bird of Paradise",        sk: "Svarga Dvijasana" },
+    { en: "Funky Flying Crow",       sk: "Eka Pada Galavasana var." },
+    { en: "Mountain Climber",        sk: "Phalakasana variation" },
+    { en: "Handstand",               sk: "Adho Mukha Vrksasana" },
+    { en: "One-Legged King Pigeon",  sk: "Eka Pada Rajakapotasana" },
+  ]
+};
+
+const cardConfigs = {
+  Andrea:   { accent: 'accent-multi',  nameColor: 'color-multi'  },
+  Gemma:    { accent: 'accent-pink',   nameColor: 'color-pink'   },
+  Margaret: { accent: 'accent-blue',   nameColor: 'color-blue'   },
+  Emily:    { accent: 'accent-yellow', nameColor: 'color-yellow' },
+  Kay:      { accent: 'accent-purple', nameColor: 'color-purple' },
+};
+
+let currentUser = null;
+
+function posesKey(name)  { return `yq_poses_${name.toLowerCase()}`; }
+function photosKey(name) { return `yq_photos_${name.toLowerCase()}`; }
+function loadPoses(name)  { try { return JSON.parse(localStorage.getItem(posesKey(name))  || 'null'); } catch(e) { return null; } }
+function savePoses(name, poses) { try { localStorage.setItem(posesKey(name), JSON.stringify(poses)); } catch(e) {} }
+function loadPhotos(name) { try { return JSON.parse(localStorage.getItem(photosKey(name)) || '{}'); }  catch(e) { return {}; } }
+function savePhotos(name, photos) { try { localStorage.setItem(photosKey(name), JSON.stringify(photos)); } catch(e) {} }
+
+function escHtml(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── screens ──
+function showOnly(id) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('setup-screen').classList.remove('visible');
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('main-app').classList.remove('visible');
+  document.getElementById('main-app').style.display = 'none';
+
+  const el = document.getElementById(id);
+  if (id === 'setup-screen') { el.style.display = 'flex'; el.classList.add('visible'); }
+  else if (id === 'main-app') { el.style.display = 'flex'; el.classList.add('visible'); }
+  else { el.style.display = 'flex'; }
+}
+
+function login(name) {
+  currentUser = name;
+  localStorage.setItem('yqUser', name);
+  const existing = loadPoses(name);
+  if (existing && existing.filter(p => p).length > 0) {
+    buildCard(name, existing);
+    showOnly('main-app');
+  } else {
+    openSetup(name, defaultPoses[name] || null);
+    showOnly('setup-screen');
+  }
+}
+
+function backToLogin() {
+  currentUser = null;
+  localStorage.removeItem('yqUser');
+  document.getElementById('card-container').innerHTML = '';
+  showOnly('login-screen');
+}
+
+function goToSetup() {
+  openSetup(currentUser, loadPoses(currentUser));
+  showOnly('setup-screen');
+}
+
+// ── pose setup ──
+function openSetup(name, existing) {
+  const cfg = cardConfigs[name];
+  const display = document.getElementById('setup-person-name');
+  display.textContent = name;
+  display.className = `setup-person-name ${cfg.nameColor}`;
+
+  const list = document.getElementById('pose-entry-list');
+  list.innerHTML = '';
+  for (let i = 0; i < 12; i++) {
+    const pose = existing ? existing[i] : null;
+    const enVal = pose ? escHtml(pose.en) : '';
+    const skVal = pose ? escHtml(pose.sk) : '';
+    const row = document.createElement('div');
+    row.className = 'pose-entry-row';
+    row.innerHTML = `
+      <div class="pose-num">${i + 1}</div>
+      <div class="pose-inputs">
+        <input class="pose-input" id="en-${i}" type="text" placeholder="Pose name (English)" value="${enVal}">
+        <input class="pose-input sanskrit" id="sk-${i}" type="text" placeholder="Sanskrit (optional)" value="${skVal}">
+      </div>`;
+    list.appendChild(row);
+  }
+}
+
+function savePosesAndBuild() {
+  const poses = [];
+  let hasAny = false;
+  for (let i = 0; i < 12; i++) {
+    const en = document.getElementById(`en-${i}`).value.trim();
+    const sk = document.getElementById(`sk-${i}`).value.trim();
+    if (en) { poses.push({ en, sk }); hasAny = true; }
+    else poses.push(null);
+  }
+  if (!hasAny) { showToast('Add at least one pose to continue!'); return; }
+  savePoses(currentUser, poses);
+  buildCard(currentUser, poses);
+  showOnly('main-app');
+}
+
+// ── file input ──
+let pendingSquare = null;
+const fileInput = document.getElementById('file-input');
+
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
+  if (!file || !pendingSquare) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    applyPhoto(pendingSquare, e.target.result);
+    const photos = loadPhotos(currentUser);
+    photos[pendingSquare.dataset.poseIdx] = e.target.result;
+    savePhotos(currentUser, photos);
+    showToast('Photo saved! ✓');
+    pendingSquare = null;
+  };
+  reader.readAsDataURL(file);
+  fileInput.value = '';
+});
+
+function applyPhoto(square, dataUrl) {
+  square.querySelector('.photo-fill img').src = dataUrl;
+  square.classList.add('has-photo');
+}
+function removePhoto(square) {
+  square.classList.remove('has-photo');
+  square.querySelector('.photo-fill img').src = '';
+  const photos = loadPhotos(currentUser);
+  delete photos[square.dataset.poseIdx];
+  savePhotos(currentUser, photos);
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+const h2cScript = document.createElement('script');
+h2cScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+document.head.appendChild(h2cScript);
+
+// Restore session if returning
+const returning = localStorage.getItem('yqUser');
+if (returning && cardConfigs[returning]) login(returning);
+function buildCard(name, poses) {
+  const { accent } = cardConfigs[name];
+  const container = document.getElementById('card-container');
+  container.innerHTML = '';
+
+  const card = document.createElement('div');
+  card.className = `card ${accent}`;
+  card.dataset.personName = name;
+
+  const squaresHTML = poses.map((pose, i) => {
+    if (!pose) return `<div class="pose-square empty-slot"><div style="color:#ccc;font-size:26px;font-weight:300">+</div></div>`;
+    return `
+      <div class="pose-square uploadable" data-pose-idx="${i}">
+        <div class="pose-bg"></div>
+        <div class="upload-placeholder">
+          <div class="upload-icon">📷</div>
+          <div class="tap-hint">Tap to add</div>
+          <div class="pose-name-en">${escHtml(pose.en)}</div>
+          ${pose.sk ? `<div class="pose-name-sk">${escHtml(pose.sk)}</div>` : ''}
+        </div>
+        <div class="photo-fill">
+          <img src="" alt="${escHtml(pose.en)}" />
+          <div class="photo-footer">
+            <div class="pf-en">${escHtml(pose.en)}</div>
+            ${pose.sk ? `<div class="pf-sk">${escHtml(pose.sk)}</div>` : ''}
+          </div>
+        </div>
+        <button class="remove-btn">✕</button>
+      </div>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="card-header">
+      <div class="card-title">2026 Yoga Queens</div>
+      <div class="card-subtitle">Strong &nbsp;·&nbsp; Determined &nbsp;·&nbsp; Disciplined</div>
+      <div class="card-name">${name}</div>
+    </div>
+    <div class="pose-grid">${squaresHTML}</div>
+    <div class="card-footer">
+      <button class="save-btn" id="save-btn-${name}">⬇ Save Card</button>
+    </div>`;
+
+  container.appendChild(card);
+
+  card.querySelectorAll('.pose-square.uploadable').forEach(sq => {
+    sq.addEventListener('click', (e) => {
+      if (e.target.classList.contains('remove-btn')) return;
+      pendingSquare = sq;
+      fileInput.click();
+    });
+  });
+
+  card.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removePhoto(btn.closest('.pose-square'));
+      showToast('Photo removed');
+    });
+  });
+
+  const saved = loadPhotos(name);
+  card.querySelectorAll('.pose-square.uploadable').forEach(sq => {
+    if (saved[sq.dataset.poseIdx]) applyPhoto(sq, saved[sq.dataset.poseIdx]);
+  });
+
+  document.getElementById(`save-btn-${name}`).addEventListener('click', () => {
+    showToast('Rendering card…');
+    const doSave = () => {
+      html2canvas(card, { scale: 2, useCORS: true, backgroundColor: '#FAFAFA' }).then(canvas => {
+        document.getElementById('lightbox-img').src = canvas.toDataURL('image/png');
+        document.getElementById('lightbox').classList.add('open');
+      });
+    };
+    if (typeof html2canvas !== 'undefined') doSave();
+    else h2cScript.onload = doSave;
+  });
+}
+</script>
+</body>
+</html>
